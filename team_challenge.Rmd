@@ -37,7 +37,8 @@ We then examine each variable to check for the existence of outliers
 
 
 # Revolving-Utilization-Of-Unsecured-Lines
-In the second variable "Revolving-Utilization-Of-Unsecured-Lines", which measures the total balance on credit card divided by sum of credit limits (amounts owing divided by total available for borrowing), the max number is 50708. That number is unlikely as we can't borrow beyond the limit by that much. Probably outlier?
+In the second variable "Revolving-Utilization-Of-Unsecured-Lines", which measures the total balance on credit card divided by sum of credit limits (amounts owing divided by total available for borrowing), 
+the max number is 50708. That number is unlikely as we can't borrow beyond the limit by that much. Probably outlier?
 
 Take a look at Observations with "Revolving-Utilization-Of-Unsecured-Lines" >1 and >100
 There are 3338 obs with Revolving-Utilization-Of-Unsecured-Lines >1 and 223 obs with Revolving-Utilization-Of-Unsecured-Lines >100, probably treat Revolving-Utilization-Of-Unsecured-Lines >100 as outliers?
