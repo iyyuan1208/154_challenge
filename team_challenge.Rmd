@@ -37,7 +37,7 @@ This suggests that only monthly income and number of dependents have missing dat
 ```{r}
 train_complete<- complete.cases(data)
 data_drop<- cbind(data,train_complete)
-data_drop<- subset(data,data$train_complete == TRUE)
+data_drop<- subset(data_drop,data_drop$train_complete == TRUE)
 ```
 These code above give us the dataframe with incompleted observations dropped 
 
