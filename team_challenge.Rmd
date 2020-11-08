@@ -22,11 +22,16 @@ mean(data$SeriousDlqin2yrs)
 ```
 
 
-We then check which of these features have null data and how many.
+We then check each feature with summary() and see which of these features have null data and how many.
 
 ```{r}
-apply(is.na(data[,2:12]), 2, sum)
+data_col <- colnames(data)
+for(i in 2:12){
+  print(data_col[i])
+  print(summary(data[,i]))
+}
 ```
+This suggests that only monthly income and number of depedents have missing data, which we would later either fill in or drop.
 
-This suggests that only monthly income and number of depedents have missing data. 
+
 
