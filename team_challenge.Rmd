@@ -3,14 +3,16 @@ title: "MATH154 Team Challenge"
 output: pdf_document
 ---
 
-```{r}
+### Loading the packages:
+
+```{r, warning=FALSE, message=FALSE}
 library(e1071)
 library(ggplot2)
 library(plyr)
 library(tidyverse)
 ```
 
-#EDA
+### EDA
 
 We began our analysis by first loading the training data set and then examine the predicators.
 
@@ -19,13 +21,14 @@ data_train <- read.csv('data/cs-training.csv')
 colnames(data_train)
 ```
 
-## Portion of defaulted
+
+#### Portion of defaulted
+
 ```{r}
 mean(data_train$SeriousDlqin2yrs)
 ```
 
-
-We then check each feature with summary() and see which of these features have null data and how many.
+We then check each feature with **summary()** and see which of these features have null data and how many.
 
 ```{r}
 data_col <- colnames(data_train)
@@ -34,17 +37,14 @@ for(i in 2:12){
   print(summary(data_train[,i]))
 }
 ```
-This suggests that only monthly income and number of dependents have missing data, which we would later either fill in or drop.
 
-We then examine each variable to check for the existence of outliers
+This suggests that only monthly income and number of dependents have missing data, which we would later either fill in or drop. We then examine each variable to check for the existence of outliers
 
+#### Revolving-Utilization-Of-Unsecured-Lines
 
-## Revolving-Utilization-Of-Unsecured-Lines
-In the second variable "Revolving-Utilization-Of-Unsecured-Lines", which measures the total balance on credit card divided by sum of credit limits (amounts owing divided by total available for borrowing), 
-the max number is 50708. That number is unlikely as we can't borrow beyond the limit by that much. Probably outlier?
+For the second variable **Revolving-Utilization-Of-Unsecured-Lines**, which measures the total balance on credit card divided by sum of credit limits (amounts owing divided by total available for borrowing), the max number is $50708$. That number is unlikely as we can't borrow beyond the limit by that much. Probably outlier?
 
-Take a look at Observations with "Revolving-Utilization-Of-Unsecured-Lines" >1 and >100
-There are 3338 obs with Revolving-Utilization-Of-Unsecured-Lines >1 and 223 obs with Revolving-Utilization-Of-Unsecured-Lines >100, probably treat Revolving-Utilization-Of-Unsecured-Lines >100 as outliers?
+Take a look at Observations with **Revolving-Utilization-Of-Unsecured-Lines** $>1$ and $>100$. There are 3338 obs with **Revolving-Utilization-Of-Unsecured-Lines** $>1$ and 223 obs with **Revolving-Utilization-Of-Unsecured-Lines** $>100$, probably treat **Revolving-Utilization-Of-Unsecured-Lines** $>100$ as outliers?
 
 ```{r}
 g1 <- subset(data_train,RevolvingUtilizationOfUnsecuredLines>=1)
@@ -53,9 +53,9 @@ summary(g1)
 summary(g2)
 ```
 
-## Age
+#### Age
 
-An analysis of the third variable shows that the group who have experienced financial distress in the next two years have an average of age lower than the other group who have not experienced such stress. The histogram also shows that there are far more people who have not experienced any financial distress than the other group.
+An analysis of the third variable **age** shows that the group who have experienced financial distress in the next two years have an average of age lower than the other group who have not experienced such stress. This may suggest that young people are more likely to experience financial hardships relative to older people. Additionally, the histogram shows that there are far more people who have not experienced any financial distress than the other group.
 
 ```{r}
 data_train$SeriousDlqin2yrs <- as.factor(data_train$SeriousDlqin2yrs)
@@ -74,7 +74,7 @@ ggplot(data_train, aes(x=age, color=SeriousDlqin2yrs,
 ```
 
 
-## NumberOfTime30.59DaysPastDueNotWorse
+#### NumberOfTime30.59DaysPastDueNotWorse
 
 In this variable, the max number is 98, which is not possible since $98\times 30 =2940$ days, which is equivalent to 8 years. However, the variable measures how many times the person has been 30-59 days past dues for the past 2 years, which makes the value 98 impossible. We should remove any value >24.33 as outliers. 
 
@@ -95,19 +95,20 @@ data_train %>%
 
 
 
-# Data Cleaning
+### Data Cleaning
 
 We thought about dropping the missing values, replacing missing values with medians, and using regressions to replace missing values
 
-## These code above give us the dataframe with incompleted observations dropped 
+#### These code above give us the dataframe with incompleted observations dropped 
+
 ```{r}
-train_complete<- complete.cases(data_train)
-data_drop<- cbind(data_train,train_complete)
-data_drop<- subset(data_drop,data_drop$train_complete == TRUE)
+train_complete <- complete.cases(data_train)
+data_drop <- cbind(data_train,train_complete)
+data_drop <- subset(data_drop,data_drop$train_complete == TRUE)
 ```
 
-## These code gave us data_median which uses the respective medians to fill in NAs in MonthlyIncome and NumberOfDependents
-```{r}
+#### These code gave us data_median which uses the respective medians to fill in NAs in MonthlyIncome and NumberOfDependents
+```{r, echo=FALSE, include=FALSE, eval=FALSE}
 data_median<-read.csv("/Users/sophiasun/Desktop/154/GiveMeSomeCredit/cs-training.csv",header= TRUE,sep=",")
 
 for (i in 1:150000){
