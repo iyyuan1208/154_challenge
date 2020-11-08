@@ -85,7 +85,10 @@ ggplot(data_revu, aes(x=RevolvingUtilizationOfUnsecuredLines, color=SeriousDlqin
   scale_fill_brewer(palette="Dark2")
 ```
 
-
+```{r}
+nrow(data_revu)
+summary(data_revu$RevolvingUtilizationOfUnsecuredLines)
+```
 
 #### Age
 
@@ -117,7 +120,7 @@ t.test(age ~ SeriousDlqin2yrs, data = data_train, var.equal = TRUE)
 
 Since p-value is much smaller than the conventional $0.05$ threshold, we say that we have found statistical significance in comparing the average of age between the two groups. 
 
-#### NumberOfTime30.59DaysPastDueNotWorse
+#### NumberOfTime30.59DaysPastDueNotWorse, and NumberOfTime60.89DaysPastDueNotWorse and NumberOfTime90DaysPastDueNotWorse
 
 In this variable, the max number is 98, which is not possible since $98\times 30 =2940$ days, which is equivalent to 8 years. However, the variable measures how many times the person has been 30-59 days past dues for the past 2 years, which makes the value 98 impossible. We should remove any value >24.33 as outliers. 
 
@@ -134,6 +137,21 @@ data_train %>%
           max_ntimes = max(NumberOfTime30.59DaysPastDueNotWorse)
             )
 ```
+
+```{r}
+table(data_train$NumberOfTime30.59DaysPastDueNotWorse)
+print('NumberOfTime30.59DaysPastDueNotWorse')
+table(data_train$NumberOfTime60.89DaysPastDueNotWorse)
+print('NumberOfTime60.89DaysPastDueNotWorse')
+table(data_train$NumberOfTimes90DaysLate)
+print('NumberOfTimes90DaysLate')
+summary(subset(data_train, NumberOfTime30.59DaysPastDueNotWorse>=96))
+summary(subset(data_train, NumberOfTime60.89DaysPastDueNotWorse>=96))
+summary(subset(data_train, NumberOfTimes90DaysLate>=96))
+table(subset(data_train, NumberOfTime30.59DaysPastDueNotWorse>=96)$X == (subset(data_train, NumberOfTime60.89DaysPastDueNotWorse>=96))$X)
+table(subset(data_train, NumberOfTime30.59DaysPastDueNotWorse>=96)$X == (subset(data_train, NumberOfTimes90DaysLate>=96)$X))
+```
+
 
 #### DebtRatio
 
@@ -160,6 +178,8 @@ iqr <- IQR(data_train$DebtRatio, na.rm = TRUE)
 data_dbtratio <- subset(data_train, 
                         data_train$DebtRatio > (Q[1] - 1.5*iqr) &
                           data_train$DebtRatio < (Q[2]+1.5*iqr))
+range(data_dbtratio$DebtRatio)
+nrow(data_dbtratio)
 ```
 
 We observe that for the group without experiencing any financial stress, it has a distribution that is higher than the other gorup on the lower end of the debt ratio. As the raio increases, we observe that the density curve for the group with experience of financial stress becomes higher.
@@ -215,6 +235,25 @@ ggplot(data_dbtratio, aes(x=NumberOfDependents, color=SeriousDlqin2yrs,
 ### Data Cleaning
 
 We thought about dropping the missing values, replacing missing values with medians, and using regressions to replace missing values
+
+```{r}
+# remove 1.5 IQR of both Revolving Utilization of Unsecured Lines and Debt Ration.
+Q1 <- quantile(data_train$RevolvingUtilizationOfUnsecuredLines, probs=c(.25, .75), na.rm = TRUE)
+iqr1 <- IQR(data_train$RevolvingUtilizationOfUnsecuredLines, na.rm = TRUE)
+Q2 <- quantile(data_train$DebtRatio, probs=c(.25, .75), na.rm = TRUE)
+iqr2 <- IQR(data_train$DebtRatio, na.rm = TRUE)
+
+data_removed <- subset(data_train, 
+                        data_train$RevolvingUtilizationOfUnsecuredLines > (Q1[1] - 1.5*iqr1) &
+                          data_train$RevolvingUtilizationOfUnsecuredLines < (Q1[2] + 1.5*iqr1))
+data_removed <- subset(data_removed, 
+                        data_removed$DebtRatio > (Q2[1] - 1.5 * iqr2) &
+                         data_removed$DebtRatio < (Q2[2] + 1.5 * iqr2))
+
+summary(data_removed)
+mean(as.numeric(data_train$SeriousDlqin2yrs) - 1)
+mean(as.numeric(data_removed$SeriousDlqin2yrs) - 1) # the removal leaves with the similar percentage of defaulter
+```
 
 #### These code above give us the dataframe with incompleted observations dropped 
 
