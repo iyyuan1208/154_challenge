@@ -39,8 +39,23 @@ train_complete<- complete.cases(data)
 data_drop<- cbind(data,train_complete)
 data_drop<- subset(data_drop,data_drop$train_complete == TRUE)
 ```
-These code above give us the dataframe with incompleted observations dropped 
+^These code above give us the dataframe with incompleted observations dropped 
 
 
+data_median<-read.csv("/Users/sophiasun/Desktop/154/GiveMeSomeCredit/cs-training.csv",header= TRUE,sep=",")
 
+for (i in 1:150000){
+   if (is.na(data_median$MonthlyIncome[i])== TRUE) {
+     data_median$MonthlyIncome[i] = 5400
+   }
+}
+```
+```{r}
+for (i in 1:150000){
+   if (is.na(data_median$NumberOfDependents[i])== TRUE) {
+     data_median$NumberOfDependents[i] = 0
+   }
+  }
 
+```
+^These code gave us data_median which uses the respective medians to fill in NAs in MonthlyIncome and NumberOfDependents
