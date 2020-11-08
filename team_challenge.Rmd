@@ -50,6 +50,8 @@ for (i in 1:150000){
    }
 }
 ```
+
+
 ```{r}
 for (i in 1:150000){
    if (is.na(data_median$NumberOfDependents[i])== TRUE) {
