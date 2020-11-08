@@ -41,7 +41,7 @@ data_drop<- subset(data_drop,data_drop$train_complete == TRUE)
 ```
 ^These code above give us the dataframe with incompleted observations dropped 
 
-
+```{r}
 data_median<-read.csv("/Users/sophiasun/Desktop/154/GiveMeSomeCredit/cs-training.csv",header= TRUE,sep=",")
 
 for (i in 1:150000){
@@ -49,10 +49,7 @@ for (i in 1:150000){
      data_median$MonthlyIncome[i] = 5400
    }
 }
-```
 
-
-```{r}
 for (i in 1:150000){
    if (is.na(data_median$NumberOfDependents[i])== TRUE) {
      data_median$NumberOfDependents[i] = 0
