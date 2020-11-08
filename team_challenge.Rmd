@@ -58,7 +58,8 @@ hist(subset(data$age,data_train$SeriousDlqin2yrs==0))
 
 # NumberOfTime30.59DaysPastDueNotWorse
 
-In this variable, the max number is 98,which is not possible since 98*30 =2940 days, which is equivalent to 8 years. However, the variable measures how many times the person has been 30-59 days past dues for the past 2 years, which makes the value 98 impossible. We should remove any value >24.33 as outliers. 
+In this variable, the max number is 98,which is not possible since 98*30 =2940 days, which is equivalent to 8 years. 
+However, the variable measures how many times the person has been 30-59 days past dues for the past 2 years, which makes the value 98 impossible. We should remove any value >24.33 as outliers. 
 
 
 
