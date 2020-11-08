@@ -1,5 +1,7 @@
 ---
 title: "MATH154 Team Challenge"
+author: "NAMES"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: pdf_document
 ---
 
@@ -73,6 +75,16 @@ ggplot(data_train, aes(x=age, color=SeriousDlqin2yrs,
   scale_fill_brewer(palette="Dark2")
 ```
 
+```{r}
+data_train %>%
+  ggplot(aes(x = SeriousDlqin2yrs, y = age)) + 
+  geom_boxplot(color = 'black', fill = 'firebrick') +
+  labs(x = "SeriousDlqin2yrs", y = "age")
+
+t.test(age ~ SeriousDlqin2yrs, data = data_train, var.equal = TRUE)
+```
+
+Since p-value is much smaller than the conventional $0.05$ threshold, we say that we have found statistical significance in comparing the average of age between the two groups. 
 
 #### NumberOfTime30.59DaysPastDueNotWorse
 
@@ -92,8 +104,82 @@ data_train %>%
             )
 ```
 
+#### DebtRatio
+
+There seem to be some abnormalities in the distribution of the debt ratio, which should be a percentage that is the Monthly debt payments, alimony, living costs divided by monthy gross income. It is possible for this number to be greater than one, but for some observations, the number is already over $1000$, which seem to be quite impossible in real life.
+
+```{r}
+data_train %>%
+  group_by(SeriousDlqin2yrs) %>%
+  summarise(
+          count = n(),
+          mean = mean(DebtRatio),
+          sd = sd(DebtRatio),
+          min = min(DebtRatio),
+          max = max(DebtRatio)
+            )
+quantile(data_train$DebtRatio, probs=c(.25, .75), na.rm = TRUE)
+```
+
+In the following steps, we first remove the outliers contained in the training data based on the **DebtRatio** variable, and instead of plotting the counts, we choose to plot the density plot and observe how the curves changes as the **DebtRatio** variable increases on the horizontal axis. 
+
+```{r}
+Q <- quantile(data_train$DebtRatio, probs=c(.25, .75), na.rm = TRUE)
+iqr <- IQR(data_train$DebtRatio, na.rm = TRUE)
+data_dbtratio <- subset(data_train, 
+                        data_train$DebtRatio > (Q[1] - 1.5*iqr) &
+                          data_train$DebtRatio < (Q[2]+1.5*iqr))
+```
+
+We observe that for the group without experiencing any financial stress, it has a distribution that is higher than the other gorup on the lower end of the debt ratio. As the raio increases, we observe that the density curve for the group with experience of financial stress becomes higher.
+
+```{r}
+ggplot(data = data_dbtratio,
+            mapping = aes(x = DebtRatio, after_stat(density), colour = SeriousDlqin2yrs)) +
+  geom_freqpoly()
+```
 
 
+#### MonthlyIncome
+
+The summary statistics show that the group without financial stress has a higher mean/median monthly income than the group with financial stress, but we also observe that some people have a monthly income of `r max(data_train$MonthlyIncome, na.rm=TRUE)`, which is unusually high.
+
+
+```{r}
+data_train %>%
+  group_by(SeriousDlqin2yrs) %>%
+  summarise(
+          count = n(),
+          mean = mean(MonthlyIncome, na.rm = TRUE),
+          median = median(MonthlyIncome, na.rm = TRUE),
+          sd = sd(MonthlyIncome, na.rm = TRUE),
+          min = min(MonthlyIncome, na.rm = TRUE),
+          max = max(MonthlyIncome, na.rm = TRUE)
+            )
+```
+
+#### Number of Dependents
+
+```{r}
+data_train %>%
+  group_by(SeriousDlqin2yrs) %>%
+  summarise(
+          count = n(),
+          mean = mean(NumberOfDependents, na.rm = TRUE),
+          median = median(NumberOfDependents, na.rm = TRUE),
+          sd = sd(MonthlyIncome, na.rm = TRUE),
+          min = min(NumberOfDependents, na.rm = TRUE),
+          max = max(NumberOfDependents, na.rm = TRUE)
+            )
+```
+
+```{r, message=FALSE}
+ggplot(data_dbtratio, aes(x=NumberOfDependents, color=SeriousDlqin2yrs,
+                       fill=SeriousDlqin2yrs)) +
+  geom_histogram(alpha = 0.5) +
+  scale_color_brewer(palette="Dark2") +
+  scale_fill_brewer(palette="Dark2")
+```
 
 ### Data Cleaning
 
