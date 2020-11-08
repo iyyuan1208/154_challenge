@@ -7,7 +7,9 @@ output: pdf_document
 library(e1071)
 library(ggplot2)
 library(plyr)
+library(tidyverse)
 ```
+
 #EDA
 
 We began our analysis by first loading the training data set and then examine the predicators.
@@ -37,7 +39,7 @@ This suggests that only monthly income and number of dependents have missing dat
 We then examine each variable to check for the existence of outliers
 
 
-# Revolving-Utilization-Of-Unsecured-Lines
+## Revolving-Utilization-Of-Unsecured-Lines
 In the second variable "Revolving-Utilization-Of-Unsecured-Lines", which measures the total balance on credit card divided by sum of credit limits (amounts owing divided by total available for borrowing), 
 the max number is 50708. That number is unlikely as we can't borrow beyond the limit by that much. Probably outlier?
 
@@ -51,49 +53,60 @@ summary(g1)
 summary(g2)
 ```
 
-# Age
+## Age
 
-An analysis of the third variable shows that the group who have experienced financial distress in the next two years have an average of age lower than the other group who have not experienced such stress.
+An analysis of the third variable shows that the group who have experienced financial distress in the next two years have an average of age lower than the other group who have not experienced such stress. The histogram also shows that there are far more people who have not experienced any financial distress than the other group.
 
 ```{r}
+data_train$SeriousDlqin2yrs <- as.factor(data_train$SeriousDlqin2yrs)
 mage <- ddply(data_train, "SeriousDlqin2yrs", summarise, grp.mean=mean(age))
 head(mage)
 ```
 
 ```{r, message=FALSE}
-ggplot(data_train, aes(x=age, color=as.factor(SeriousDlqin2yrs),
-                       fill=as.factor(SeriousDlqin2yrs))) +
-  geom_vline(data=mage, aes(xintercept=grp.mean, 
-                                  color=as.factor(SeriousDlqin2yrs)),
-                                  linetype="dashed", size=1) +
+ggplot(data_train, aes(x=age, color=SeriousDlqin2yrs,
+                       fill=SeriousDlqin2yrs)) +
+  geom_vline(data=mage, aes(xintercept=grp.mean, color=SeriousDlqin2yrs),
+                                  linetype="dashed", size=1.3) +
   geom_histogram(alpha = 0.5, position = "identity") +
-  scale_color_brewer(palette="Dark2")
+  scale_color_brewer(palette="Dark2") +
   scale_fill_brewer(palette="Dark2")
 ```
 
 
-# NumberOfTime30.59DaysPastDueNotWorse
+## NumberOfTime30.59DaysPastDueNotWorse
 
-In this variable, the max number is 98,which is not possible since 98*30 =2940 days, which is equivalent to 8 years. 
-However, the variable measures how many times the person has been 30-59 days past dues for the past 2 years, which makes the value 98 impossible. We should remove any value >24.33 as outliers. 
+In this variable, the max number is 98, which is not possible since $98\times 30 =2940$ days, which is equivalent to 8 years. However, the variable measures how many times the person has been 30-59 days past dues for the past 2 years, which makes the value 98 impossible. We should remove any value >24.33 as outliers. 
+
+Still, looking at the summary statistics stated below, we found that for the group who have experienced financial stress, their mean and standard deviation are both significantly higher than the group who have not.
+
+```{r}
+data_train %>%
+  group_by(SeriousDlqin2yrs) %>%
+  summarise(
+          count = n(),
+          mean_ntimes = mean(NumberOfTime30.59DaysPastDueNotWorse),
+          sd_ntimes = sd(NumberOfTime30.59DaysPastDueNotWorse),
+          min_ntimes = min(NumberOfTime30.59DaysPastDueNotWorse),
+          max_ntimes = max(NumberOfTime30.59DaysPastDueNotWorse)
+            )
+```
 
 
 
 
-
-
-## Data Cleaning
+# Data Cleaning
 
 We thought about dropping the missing values, replacing missing values with medians, and using regressions to replace missing values
 
-# These code above give us the dataframe with incompleted observations dropped 
+## These code above give us the dataframe with incompleted observations dropped 
 ```{r}
-train_complete<- complete.cases(data)
-data_drop<- cbind(data,train_complete)
+train_complete<- complete.cases(data_train)
+data_drop<- cbind(data_train,train_complete)
 data_drop<- subset(data_drop,data_drop$train_complete == TRUE)
 ```
 
-# These code gave us data_median which uses the respective medians to fill in NAs in MonthlyIncome and NumberOfDependents
+## These code gave us data_median which uses the respective medians to fill in NAs in MonthlyIncome and NumberOfDependents
 ```{r}
 data_median<-read.csv("/Users/sophiasun/Desktop/154/GiveMeSomeCredit/cs-training.csv",header= TRUE,sep=",")
 
