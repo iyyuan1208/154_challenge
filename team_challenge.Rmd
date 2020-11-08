@@ -7,7 +7,7 @@ output: pdf_document
 library(e1071)
 library()
 ```
-# Data Cleaning
+#EDA
 
 We began our analysis by first loading the training data set and then examine the predicators.
 
@@ -33,14 +33,50 @@ for(i in 2:12){
 ```
 This suggests that only monthly income and number of dependents have missing data, which we would later either fill in or drop.
 
+We then examine each variable to check for the existence of outliers
 
+
+# Revolving-Utilization-Of-Unsecured-Lines
+In the second variable "Revolving-Utilization-Of-Unsecured-Lines", which measures the total balance on credit card divided by sum of credit limits (amounts owing divided by total available for borrowing), the max number is 50708. That number is unlikely as we can't borrow beyond the limit by that much. Probably outlier?
+
+Take a look at Observations with "Revolving-Utilization-Of-Unsecured-Lines" >1 and >100
+There are 3338 obs with Revolving-Utilization-Of-Unsecured-Lines >1 and 223 obs with Revolving-Utilization-Of-Unsecured-Lines >100, probably treat Revolving-Utilization-Of-Unsecured-Lines >100 as outliers?
+
+```{r}
+g1 <- subset(data_train,RevolvingUtilizationOfUnsecuredLines>=1)
+g2 <- subset(data_train,RevolvingUtilizationOfUnsecuredLines>=100)
+summary(g1)
+summary(g2)
+```
+
+# Age
+For the third variable age, there seems to be more younger people defaulting than older people, as can be seen in the distributions below
+```{r}
+hist(subset(data$age,data_train$SeriousDlqin2yrs==1))
+hist(subset(data$age,data_train$SeriousDlqin2yrs==0))
+```
+
+# NumberOfTime30.59DaysPastDueNotWorse
+
+In this variable, the max number is 98,which is not possible since 98*30 =2940 days, which is equivalent to 8 years. However, the variable measures how many times the person has been 30-59 days past dues for the past 2 years, which makes the value 98 impossible. We should remove any value >24.33 as outliers. 
+
+
+
+
+
+
+## Data Cleaning
+
+We thought about dropping the missing values, replacing missing values with medians, and using regressions to replace missing values
+
+# These code above give us the dataframe with incompleted observations dropped 
 ```{r}
 train_complete<- complete.cases(data)
 data_drop<- cbind(data,train_complete)
 data_drop<- subset(data_drop,data_drop$train_complete == TRUE)
 ```
-^These code above give us the dataframe with incompleted observations dropped 
 
+# These code gave us data_median which uses the respective medians to fill in NAs in MonthlyIncome and NumberOfDependents
 ```{r}
 data_median<-read.csv("/Users/sophiasun/Desktop/154/GiveMeSomeCredit/cs-training.csv",header= TRUE,sep=",")
 
@@ -57,4 +93,4 @@ for (i in 1:150000){
   }
 
 ```
-^These code gave us data_median which uses the respective medians to fill in NAs in MonthlyIncome and NumberOfDependents
+
