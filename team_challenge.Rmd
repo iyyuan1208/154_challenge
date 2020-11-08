@@ -31,7 +31,16 @@ for(i in 2:12){
   print(summary(data[,i]))
 }
 ```
-This suggests that only monthly income and number of depedents have missing data, which we would later either fill in or drop.
+This suggests that only monthly income and number of dependents have missing data, which we would later either fill in or drop.
+
+
+```{r}
+train_complete<- complete.cases(data)
+data_drop<- cbind(data,train_complete)
+data_drop<- subset(data,data$train_complete == TRUE)
+```
+These code above give us the dataframe with incompleted observations dropped 
+
 
 
 
