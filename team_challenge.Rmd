@@ -3,27 +3,30 @@ title: "team_challenge"
 output: pdf_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r}
+library(e1071)
+library()
+```
+# Data Cleaning
+
+We began our analysis by first loading the training data set and then examine the predicators.
+
+```{r}
+data <- read.csv('data/cs-training.csv')
+colnames(data)
 ```
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+## Portion of defaulted
+```{r}
+mean(data$SeriousDlqin2yrs)
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
+We then check which of these features have null data and how many.
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+apply(is.na(data[,2:12]), 2, sum)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+This suggests that only monthly income and number of depedents have missing data. 
 
