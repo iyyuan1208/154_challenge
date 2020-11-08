@@ -1,34 +1,35 @@
 ---
-title: "team_challenge"
+title: "MATH154 Team Challenge"
 output: pdf_document
 ---
 
 ```{r}
 library(e1071)
-library()
+library(ggplot2)
+library(plyr)
 ```
 #EDA
 
 We began our analysis by first loading the training data set and then examine the predicators.
 
 ```{r}
-data <- read.csv('data/cs-training.csv')
-colnames(data)
+data_train <- read.csv('data/cs-training.csv')
+colnames(data_train)
 ```
 
 ## Portion of defaulted
 ```{r}
-mean(data$SeriousDlqin2yrs)
+mean(data_train$SeriousDlqin2yrs)
 ```
 
 
 We then check each feature with summary() and see which of these features have null data and how many.
 
 ```{r}
-data_col <- colnames(data)
+data_col <- colnames(data_train)
 for(i in 2:12){
   print(data_col[i])
-  print(summary(data[,i]))
+  print(summary(data_train[,i]))
 }
 ```
 This suggests that only monthly income and number of dependents have missing data, which we would later either fill in or drop.
@@ -51,11 +52,25 @@ summary(g2)
 ```
 
 # Age
-For the third variable age, there seems to be more younger people defaulting than older people, as can be seen in the distributions below
+
+An analysis of the third variable shows that the group who have experienced financial distress in the next two years have an average of age lower than the other group who have not experienced such stress.
+
 ```{r}
-hist(subset(data$age,data_train$SeriousDlqin2yrs==1))
-hist(subset(data$age,data_train$SeriousDlqin2yrs==0))
+mage <- ddply(data_train, "SeriousDlqin2yrs", summarise, grp.mean=mean(age))
+head(mage)
 ```
+
+```{r, message=FALSE}
+ggplot(data_train, aes(x=age, color=as.factor(SeriousDlqin2yrs),
+                       fill=as.factor(SeriousDlqin2yrs))) +
+  geom_vline(data=mage, aes(xintercept=grp.mean, 
+                                  color=as.factor(SeriousDlqin2yrs)),
+                                  linetype="dashed", size=1) +
+  geom_histogram(alpha = 0.5, position = "identity") +
+  scale_color_brewer(palette="Dark2")
+  scale_fill_brewer(palette="Dark2")
+```
+
 
 # NumberOfTime30.59DaysPastDueNotWorse
 
