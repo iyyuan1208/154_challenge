@@ -42,11 +42,16 @@ for(i in 2:12){
 
 This suggests that only monthly income and number of dependents have missing data, which we would later either fill in or drop. We then examine each variable to check for the existence of outliers
 
+```{r}
+data_train$SeriousDlqin2yrs <- as.factor(data_train$SeriousDlqin2yrs)
+```
+
+
 #### Revolving-Utilization-Of-Unsecured-Lines
 
-For the second variable **Revolving-Utilization-Of-Unsecured-Lines**, which measures the total balance on credit card divided by sum of credit limits (amounts owing divided by total available for borrowing), the max number is $50708$. That number is unlikely as we can't borrow beyond the limit by that much. Probably outlier?
+For the second variable **Revolving-Utilization-Of-Unsecured-Lines**, which measures the total balance on credit card divided by sum of credit limits (amounts owing divided by total available for borrowing), the max number is $50708$, which is unlikely as we can't borrow beyond the limit by that much. 
 
-Take a look at Observations with **Revolving-Utilization-Of-Unsecured-Lines** $>1$ and $>100$. There are 3338 obs with **Revolving-Utilization-Of-Unsecured-Lines** $>1$ and 223 obs with **Revolving-Utilization-Of-Unsecured-Lines** $>100$, probably treat **Revolving-Utilization-Of-Unsecured-Lines** $>100$ as outliers?
+Take a look at Observations with **Revolving-Utilization-Of-Unsecured-Lines** $>1$ and $>100$. There are 3338 obs with **Revolving-Utilization-Of-Unsecured-Lines** $>1$ and 223 obs with **Revolving-Utilization-Of-Unsecured-Lines** $>100$.
 
 ```{r}
 g1 <- subset(data_train,RevolvingUtilizationOfUnsecuredLines>=1)
@@ -55,12 +60,38 @@ summary(g1)
 summary(g2)
 ```
 
+If we remove the outliers using the $1.5$IQR rule and plot the density plot grouped by whether there is a financial stress experienced, we observe an interesting shape. The group that has experienced financial stress is more likely to be concentrated on the higher end of the value of the **RevolvingUtilizationOfUnsecuredLines** variable.
+
+```{r}
+Q <- quantile(data_train$RevolvingUtilizationOfUnsecuredLines, probs=c(.25, .75), na.rm = TRUE)
+iqr <- IQR(data_train$RevolvingUtilizationOfUnsecuredLines, na.rm = TRUE)
+data_revu <- subset(data_train, 
+                        data_train$RevolvingUtilizationOfUnsecuredLines > (Q[1] - 1.5*iqr) &
+                          data_train$RevolvingUtilizationOfUnsecuredLines < (Q[2]+1.5*iqr))
+```
+
+```{r}
+ggplot(data = data_revu,
+            mapping = aes(x = RevolvingUtilizationOfUnsecuredLines,
+                          after_stat(density), colour = SeriousDlqin2yrs)) +
+  geom_freqpoly()
+```
+
+```{r, message=FALSE, include=FALSE}
+ggplot(data_revu, aes(x=RevolvingUtilizationOfUnsecuredLines, color=SeriousDlqin2yrs,
+                       fill=SeriousDlqin2yrs)) +
+  geom_histogram(alpha = 0.5, position = "identity") +
+  scale_color_brewer(palette="Dark2") +
+  scale_fill_brewer(palette="Dark2")
+```
+
+
+
 #### Age
 
 An analysis of the third variable **age** shows that the group who have experienced financial distress in the next two years have an average of age lower than the other group who have not experienced such stress. This may suggest that young people are more likely to experience financial hardships relative to older people. Additionally, the histogram shows that there are far more people who have not experienced any financial distress than the other group.
 
 ```{r}
-data_train$SeriousDlqin2yrs <- as.factor(data_train$SeriousDlqin2yrs)
 mage <- ddply(data_train, "SeriousDlqin2yrs", summarise, grp.mean=mean(age))
 head(mage)
 ```
