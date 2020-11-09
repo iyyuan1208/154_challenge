@@ -14,6 +14,8 @@ library(plyr)
 library(tidyverse)
 library(mice)
 library(randomForest)
+library(class)
+library(caret)
 ```
 
 ### EDA
@@ -269,7 +271,26 @@ md.pattern(data_removed[,c(7,12)])
 
 data_removed_rfimpute <- mice(data_removed, meth = 'rf', m = 1)
 ```
-
+```{r}
+completed_data_removed_rfimpute <- complete(data_removed_rfimpute, 1)
+data_removed_rfimpute_no_id <- completed_data_removed_rfimpute[,-1]
+knn_cv <- tune.knn(data_removed_rfimpute_no_id[,-1],
+                   data_removed_rfimpute_no_id[,1],
+                   k = 1:20,
+                   tunecontrol = tune.control(cross = 10))
+knn_cv
+k_best <- as.numeric(knn_cv$best.parameters)
+```
+```{r}
+data_test <- read.csv('data/cs-test.csv')
+md.pattern(data_test[,-2])
+```
+```{r}
+knn_data_removed_rfimpute_no_id <- knn(data_removed_rfimpute_no_id[, -1],
+                                       data_removed_rfimpute_no_id[, 1],
+                                       k = k_best
+                                       )
+```
 #### These code above give us the dataframe with incompleted observations dropped 
 
 ```{r}
