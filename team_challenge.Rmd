@@ -253,6 +253,12 @@ data_removed <- subset(data_removed,
 summary(data_removed)
 mean(as.numeric(data_train$SeriousDlqin2yrs) - 1)
 mean(as.numeric(data_removed$SeriousDlqin2yrs) - 1) # the removal leaves with the similar percentage of defaulter
+
+# Remove 96's and 98's in 30-59, 60-89, 90 days past due in the data. 
+
+data_removed <- subset(data_removed,
+                       data_removed$NumberOfTimes90DaysLate < 96)
+summary(data_removed)
 ```
 
 #### These code above give us the dataframe with incompleted observations dropped 
