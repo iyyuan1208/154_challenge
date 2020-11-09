@@ -12,6 +12,8 @@ library(e1071)
 library(ggplot2)
 library(plyr)
 library(tidyverse)
+library(mice)
+library(randomForest)
 ```
 
 ### EDA
@@ -259,6 +261,13 @@ mean(as.numeric(data_removed$SeriousDlqin2yrs) - 1) # the removal leaves with th
 data_removed <- subset(data_removed,
                        data_removed$NumberOfTimes90DaysLate < 96)
 summary(data_removed)
+```
+```{r}
+#imputation 
+set.seed(47)
+md.pattern(data_removed[,c(7,12)])
+
+data_removed_rfimpute <- mice(data_removed, meth = 'rf', m = 1)
 ```
 
 #### These code above give us the dataframe with incompleted observations dropped 
