@@ -414,6 +414,43 @@ abline(0,1)
 
 ##### RF using dropped training data
 
+```{r}
+set.seed(47)
+rftune_drop <- tuneRF(data_train_drop[, c(-1,-2)], data_train_drop[,2], stepFactor=1.5, improve=1e-5, ntree=500)
+m <- rftune_drop[rftune_drop[,2]==min(rftune_drop[,2]),1]
+rf_fit_drop <- randomForest(SeriousDlqin2yrs ~ ., 
+                       data_train_drop[,-1], importance= TRUE, mtry=m)
+```
+
+```{r}
+rf_fit_drop_test <- predict(rf_fit_drop, newdata = data_test_imp)
+```
+
+
 ##### RF using median training data
 
+```{r}
+set.seed(47)
+rftune_drop <- tuneRF(data_train_30_median[, c(-1,-2)], data_train_30_median[,2], stepFactor=1.5, improve=1e-5, ntree=500)
+m <- rftune_drop[rftune_drop[,2]==min(rftune_drop[,2]),1]
+rf_fit_median <- randomForest(SeriousDlqin2yrs ~ ., 
+                       data_train_30_median[,-1], importance= TRUE, mtry=m)
+```
+
+```{r}
+rf_fit_median_test <- predict(rf_fit_median, newdata = data_test_imp)
+```
+
 ##### RF using imputation training data
+
+```{r}
+set.seed(47)
+rftune_drop <- tuneRF(data_train_imp[, c(-1,-2)], data_train_imp[,2], stepFactor=1.5, improve=1e-5, ntree=500)
+m <- rftune_drop[rftune_drop[,2]==min(rftune_drop[,2]),1]
+rf_fit_imp <- randomForest(SeriousDlqin2yrs ~ ., 
+                       data_train_imp[,-1], importance= TRUE, mtry=m)
+```
+
+```{r}
+rf_fit_imp_test <- predict(rf_fit_imp, newdata = data_test_imp)
+```
