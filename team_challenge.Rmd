@@ -254,66 +254,57 @@ data_removed <- subset(data_removed,
                         data_removed$DebtRatio > (Q2[1] - 1.5 * iqr2) &
                          data_removed$DebtRatio < (Q2[2] + 1.5 * iqr2))
 
-summary(data_removed)
-mean(as.numeric(data_train$SeriousDlqin2yrs) - 1)
-mean(as.numeric(data_removed$SeriousDlqin2yrs) - 1) # the removal leaves with the similar percentage of defaulter
+#summary(data_removed)
+#mean(as.numeric(data_train$SeriousDlqin2yrs) - 1)
+#mean(as.numeric(data_removed$SeriousDlqin2yrs) - 1) # the removal leaves with the similar percentage of defaulter
 
 # Remove 96's and 98's in 30-59, 60-89, 90 days past due in the data. 
 
 data_removed <- subset(data_removed,
                        data_removed$NumberOfTimes90DaysLate < 96)
-summary(data_removed)
+#summary(data_removed)
 ```
+
+#### Imputation using random forest
 ```{r}
-#imputation 
+#imputation on data_removed training set 
 set.seed(47)
 md.pattern(data_removed[,c(7,12)])
+data_removed_rfimpute <- mice(data_removed[,-c(1,2)], meth = 'rf', m = 1)
+```
 
-data_removed_rfimpute <- mice(data_removed, meth = 'rf', m = 1)
-```
 ```{r}
-completed_data_removed_rfimpute <- complete(data_removed_rfimpute, 1)
-data_removed_rfimpute_no_id <- completed_data_removed_rfimpute[,-1]
-knn_cv <- tune.knn(data_removed_rfimpute_no_id[,-1],
-                   data_removed_rfimpute_no_id[,1],
-                   k = 1:20,
-                   tunecontrol = tune.control(cross = 10))
-knn_cv
-k_best <- as.numeric(knn_cv$best.parameters)
-```
-```{r}
+#imputation on data_test testing set
 data_test <- read.csv('data/cs-test.csv')
 md.pattern(data_test[,-2])
+set.seed(47)
+data_test_rfimpute <- mice(data_test[,-c(1,2)],meth = 'rf', m = 1)
 ```
+
+####Replacing NA with Median
 ```{r}
-knn_data_removed_rfimpute_no_id <- knn(data_removed_rfimpute_no_id[, -1],
-                                       data_removed_rfimpute_no_id[, 1],
-                                       k = k_best
-                                       )
-```
-#### These code above give us the dataframe with incompleted observations dropped 
+data_removed_median <- data_removed
+median1 <- as.numeric(summary(data_removed_median$MonthlyIncome)[3])
+median2 <- as.numeric(summary(data_removed_median$NumberOfDependents)[3])
 
+data_removed_median$MonthlyIncome[is.na(data_removed_median$MonthlyIncome)] <- median1
+
+data_removed_median$NumberOfDependents[is.na(data_removed_median$NumberOfDependents)] <- median2
+```
+
+#### Drop NA data in the training set without removing any outlier
 ```{r}
-train_complete <- complete.cases(data_train)
-data_drop <- cbind(data_train,train_complete)
-data_drop <- subset(data_drop,data_drop$train_complete == TRUE)
+data_train_drop <- data_train[complete.cases(data_train$MonthlyIncome), ]
+data_train_drop <- data_train_drop[complete.cases(data_train_drop$NumberOfDependents), ]
 ```
 
-#### These code gave us data_median which uses the respective medians to fill in NAs in MonthlyIncome and NumberOfDependents
-```{r, echo=FALSE, include=FALSE, eval=FALSE}
-data_median<-read.csv("/Users/sophiasun/Desktop/154/GiveMeSomeCredit/cs-training.csv",header= TRUE,sep=",")
+#### KNN
 
-for (i in 1:150000){
-   if (is.na(data_median$MonthlyIncome[i])== TRUE) {
-     data_median$MonthlyIncome[i] = 5400
-   }
-}
 
-for (i in 1:150000){
-   if (is.na(data_median$NumberOfDependents[i])== TRUE) {
-     data_median$NumberOfDependents[i] = 0
-   }
-  }
 
-```
+#### svm
+
+
+
+#### Random Forest
 
