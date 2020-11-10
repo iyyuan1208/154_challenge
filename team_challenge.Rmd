@@ -16,6 +16,7 @@ library(mice)
 library(randomForest)
 library(class)
 library(caret)
+library(pROC)
 ```
 
 ### EDA
@@ -299,10 +300,6 @@ data_test_imp = imp.test$ximp
 ```
 
 
-```{r}
-data_train_30_rfimpute_completed <- complete(data_train_30_rfimpute, 1)
-```
-
 ####Replacing NA with Median
 ```{r}
 data_train_30_median <- data_train_30
@@ -327,6 +324,7 @@ data_train_drop <- data_train_drop[complete.cases(data_train_drop$NumberOfDepend
 ```{r}
 data_test_imp <- read.csv('data_test_imp.csv')
 data_train_imp <- read.csv('data_train_imp.csv')
+data_train_imp<- data_train_imp[-1]
 ```
 
 #### SVM
@@ -348,16 +346,11 @@ svm_fit_drop <- svm(SeriousDlqin2yrs ~ .,
 ```{r}
 svm_fit_drop_test <- predict(svm_fit_drop, data_test_imputed[,-c(1,2)], decision.values = TRUE)
 ```
-
+## ROC AUC
 ```{r}
-dv <- svm_fit_drop
-tp <- c() -> fp #initialize true and false positive vectors
-ks <- seq(min(dv), max(dv),length.out=nrow(dv))
-for (i in 1:nrow(dv)){
-
-}
-plot(fp,tp, t='l')
-abline(0,1)
+data_test_1<-cbind(data_test,svm_fit_drop_test)
+plot(roc(data_test_1,SeriousDlqin2yrs,svm_fit_drop_test))
+roc(data_test_1,SeriousDlqin2yrs,svm_fit_drop_test)
 ```
 
 ##### SVM using median training data
@@ -377,7 +370,12 @@ svm_fit_median <- svm(SeriousDlqin2yrs ~ .,
 ```{r}
 svm_fit_median_test <- predict(svm_fit_median, data_test_imputed, decision.values = TRUE)
 ```
-
+## ROC AUC
+```{r}
+data_test_2<-cbind(data_test,svm_fit_median_test)
+plot(roc(data_test_2,SeriousDlqin2yrs,svm_fit_median_test))
+roc(data_test_2,SeriousDlqin2yrs,svm_fit_median_test)
+```
 ##### SVM using imputation training data
 
 ```{r}
@@ -396,19 +394,14 @@ svm_fit_imputed <- svm(SeriousDlqin2yrs ~ .,
 svm_fit_imputed_test <- predict(svm_fit_imputed, data_test_imputed, decision.values = TRUE)
 ```
 
-
+### ROC AUC
 ```{r}
-dv <- attr(svm_fit_imputed_test, "decision.values")
-tp <- c() -> fp #initialize true and false positive vectors
-ks <- seq(min(dv), max(dv),length.out=nrow(dv))
-for (i in 1:nrow(dv)){
-k <- ks[i]
-tp[i] <- mean(dv[1:50] > k)
-fp[i] <- mean(dv[51:100] > k)
-}
-plot(fp,tp, t='l')
-abline(0,1)
+data_test_3<-cbind(data_test,svm_fit_imputed_test)
+plot(roc(data_test_3,SeriousDlqin2yrs,svm_fit_imputed_test))
+roc(data_test_3,SeriousDlqin2yrs,svm_fit_imputed_test)
 ```
+
+
 
 #### Random Forest
 
@@ -430,8 +423,13 @@ rf_fit_drop <- randomForest(SeriousDlqin2yrs ~ .,
 ```{r}
 rf_fit_drop_test <- predict(rf_fit_drop, newdata = data_test_imp[,-1])
 ```
-
-
+## ROC AUC
+```{r}
+data_test_4<-cbind(data_test,rf_fit_drop_test)
+plot(roc(data_test_4,SeriousDlqin2yrs,rf_fit_drop_test))
+roc(data_test_4,SeriousDlqin2yrs,rf_fit_drop_test)
+#0.8472
+```
 ##### RF using median training data
 
 ```{r}
@@ -445,7 +443,13 @@ rf_fit_median <- randomForest(SeriousDlqin2yrs ~ .,
 ```{r}
 rf_fit_median_test <- predict(rf_fit_median, newdata = data_test_imp[,-1])
 ```
-
+## ROC AUC
+```{r}
+data_test_5<-cbind(data_test,rf_fit_median_test)
+plot(roc(data_test_5,SeriousDlqin2yrs,rf_fit_median_test))
+roc(data_test_5,SeriousDlqin2yrs,rf_fit_median_test)
+#0.8484
+```
 ##### RF using imputation training data
 
 ```{r}
@@ -458,4 +462,10 @@ rf_fit_imp <- randomForest(SeriousDlqin2yrs ~ .,
 
 ```{r}
 rf_fit_imp_test <- predict(rf_fit_imp, newdata = data_test_imp[,-1])
+```
+## ROC AUC
+```{r}
+data_test_6<-cbind(data_test,rf_fit_imp_test)
+plot(roc(data_test_6,SeriousDlqin2yrs,rf_fit_imp_test))
+roc(data_test_6,SeriousDlqin2yrs,rf_fit_imp_test)
 ```
