@@ -281,21 +281,23 @@ data_train_30 <- merge(data_nodefault_sample, data_default, all =TRUE)
 summary(data_train_30)
 ```
 #### Imputation using random forest on sampled data
+
+#random forest imputation on data_train_30 
 ```{r}
-#random forest imputation on data_removed_sampled training set 
-set.seed(47)
-md.pattern(data_train_30[,c(7,12)])
-data_train_30_rfimpute <- rfImpute( ~ MonthlyIncome + NumberOfDependents, data_train_30[,-1])
+registerDoParallel(cores=4)
+data_train_imp<- data_train_30[,-1]
+imp.train <-missForest(data_train_imp,parallelize="forests")
+data_train_imp<- cbind(data_train_30$X,imp.train$ximp)
+```
+#random forest imputation on data_test set
+
+```{r}
+registerDoParallel(cores=4)
+data_test_imp<- data_test[,-1]
+imp.test <-missForest(data_test_imp[,-1],parallelize="forests")
+data_test_imp = imp.test$ximp
 ```
 
-
-```{r}
-#random forest imputation on data_test testing set
-#data_test <- read.csv('data/cs-test.csv')
-#md.pattern(data_test[,-2])
-#set.seed(47)
-#data_test_rfimpute <- mice(data_test[,-c(1,2)],meth = 'rf', m = 1)
-```
 
 ```{r}
 data_train_30_rfimpute_completed <- complete(data_train_30_rfimpute, 1)
@@ -323,7 +325,8 @@ data_train_drop <- data_train_drop[complete.cases(data_train_drop$NumberOfDepend
 #### Import the imputed testing data 
 
 ```{r}
-data_test_imputed <- read.csv('test_imput.csv')
+data_test_imp <- read.csv('data_test_imp.csv')
+data_train_imp <- read.csv('data_train_imp.csv')
 ```
 
 #### SVM
