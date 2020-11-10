@@ -265,20 +265,40 @@ data_removed <- subset(data_removed,
 #summary(data_removed)
 ```
 
+#increse the percentage of defualted by randomly sampling non-defaulted data
+```{r}
+data_default <- subset(data_removed, data_removed$SeriousDlqin2yrs == 1)
+data_nodefault <- subset(data_removed, data_removed$SeriousDlqin2yrs == 0)
+data_nodefault_sample <- data_nodefault[sample(1:nrow(data_nodefault), nrow(data_default)*7/3),]
+data_removed_sample <- merge(data_nodefault_sample, data_default, all =TRUE)
+summary(data_removed_sample)
+```
+#### Imputation using random forest on sampled data
+```{r}
+#random forest imputation on data_removed training set 
+set.seed(47)
+md.pattern(data_removed_sample[,c(7,12)])
+data_removed_sample_rfimpute <- mice(data_removed_sample[,-c(1,2)], meth = 'rf', m = 1)
+```
+
 #### Imputation using random forest
 ```{r}
-#imputation on data_removed training set 
+#random forest imputation on data_removed training set 
 set.seed(47)
 md.pattern(data_removed[,c(7,12)])
 data_removed_rfimpute <- mice(data_removed[,-c(1,2)], meth = 'rf', m = 1)
 ```
 
 ```{r}
-#imputation on data_test testing set
+#random forest imputation on data_test testing set
 data_test <- read.csv('data/cs-test.csv')
 md.pattern(data_test[,-2])
 set.seed(47)
 data_test_rfimpute <- mice(data_test[,-c(1,2)],meth = 'rf', m = 1)
+```
+```{r}
+completed_data_removed_rfimpute <- complete(data_removed_rfimpute, 1)
+completed_data_test_rfimpute <- complete(data_test_rfimpute, 1)
 ```
 
 ####Replacing NA with Median
@@ -299,7 +319,6 @@ data_train_drop <- data_train_drop[complete.cases(data_train_drop$NumberOfDepend
 ```
 
 #### KNN
-
 
 
 #### svm
