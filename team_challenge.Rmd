@@ -311,28 +311,73 @@ data_train_drop <- data_train_30[complete.cases(data_train_30$MonthlyIncome), ]
 data_train_drop <- data_train_drop[complete.cases(data_train_drop$NumberOfDependents), ]
 ```
 
-#### KNN
+### Training and testing the models: SVM and Random Forests
 
+#### Import the imputed testing data 
 
-#### svm
+```{r}
+data_test_imputed <- read.csv('test_imput.csv')
+```
+
+#### SVM
+
+##### SVM using dropped training data
+
 ```{r}
 svm_cv <- tune.svm(SeriousDlqin2yrs ~ ., 
-                          data = completed_data_removed_sample_rfimpute, 
+                          data = data_train_drop, 
                           gamma = 2^(-1:1), 
                           cost = 2^(2:4), 
                           tunecontrol = tune.control(sampling = "fix"))
-svm_fit_sampled <- svm(SeriousDlqin2yrs ~ ., 
-                       completed_data_removed_sample_rfimpute,
+svm_fit_drop <- svm(SeriousDlqin2yrs ~ ., 
+                       data_train_drop,
                        gamma = svm_cv$best.parameters$gamma, 
                        cost = svm_cv$best.parameters$cost)
 ```
 
 ```{r}
-svm_fit_sampled_test <- predict(svm_fit_sampled, completed_data_test_rfimpute, decision.values = TRUE)
+svm_fit_drop_test <- predict(svm_fit_drop, data_test_imputed, decision.values = TRUE)
+```
+
+##### SVM using median training data
+
+```{r}
+svm_cv <- tune.svm(SeriousDlqin2yrs ~ ., 
+                          data = data_train_30_median, 
+                          gamma = 2^(-1:1), 
+                          cost = 2^(2:4), 
+                          tunecontrol = tune.control(sampling = "fix"))
+svm_fit_median <- svm(SeriousDlqin2yrs ~ ., 
+                       data_train_30_median,
+                       gamma = svm_cv$best.parameters$gamma, 
+                       cost = svm_cv$best.parameters$cost)
 ```
 
 ```{r}
-dv <- attr(svm_fit_sampled_test, "decision.values")
+svm_fit_median_test <- predict(svm_fit_median, data_test_imputed, decision.values = TRUE)
+```
+
+##### SVM using imputation training data
+
+```{r}
+svm_cv <- tune.svm(SeriousDlqin2yrs ~ ., 
+                          data = data_train_30_rfimpute_completed, 
+                          gamma = 2^(-1:1), 
+                          cost = 2^(2:4), 
+                          tunecontrol = tune.control(sampling = "fix"))
+svm_fit_imputed <- svm(SeriousDlqin2yrs ~ ., 
+                       data_train_30_rfimpute_completed,
+                       gamma = svm_cv$best.parameters$gamma, 
+                       cost = svm_cv$best.parameters$cost)
+```
+
+```{r}
+svm_fit_imputed_test <- predict(svm_fit_imputed, data_test_imputed, decision.values = TRUE)
+```
+
+
+```{r}
+dv <- attr(svm_fit_imputed_test, "decision.values")
 tp <- c() -> fp #initialize true and false positive vectors
 ks <- seq(min(dv), max(dv),length.out=nrow(dv))
 for (i in 1:nrow(dv)){
@@ -344,5 +389,11 @@ plot(fp,tp, t='l')
 abline(0,1)
 auc <- mean(tp>fp)
 ```
+
 #### Random Forest
 
+##### RF using dropped training data
+
+##### RF using median training data
+
+##### RF using imputation training data
