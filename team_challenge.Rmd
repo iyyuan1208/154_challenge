@@ -23,7 +23,13 @@ library(caret)
 We began our analysis by first loading the training data set and then examine the predicators.
 
 ```{r}
-data_train <- read.csv('data/cs-training.csv')
+data <- read.csv('data/cs-training.csv')
+smp_size = 0.8 * nrow(data)
+set.seed(47)
+train_ind <- sample(seq_len(nrow(data)), size = smp_size)
+
+data_train <- data[train_ind, ]
+data_test <- data[-train_ind, ]
 colnames(data_train)
 ```
 
@@ -265,7 +271,7 @@ data_removed <- subset(data_removed,
 #summary(data_removed)
 ```
 
-#increse the percentage of defualted by randomly sampling non-defaulted data
+#increse the percentage of defaulted by randomly sampling non-defaulted data
 ```{r}
 set.seed(47)
 data_default <- subset(data_removed, data_removed$SeriousDlqin2yrs == 1)
@@ -279,7 +285,7 @@ summary(data_train_30)
 #random forest imputation on data_removed_sampled training set 
 set.seed(47)
 md.pattern(data_train_30[,c(7,12)])
-data_train_30_rfimpute <- mice(data_train_30[,-1], meth = 'rf', m = 1)
+data_train_30_rfimpute <- rfImpute( ~ MonthlyIncome + NumberOfDependents, data_train_30[,-1])
 ```
 
 
@@ -341,13 +347,11 @@ svm_fit_drop_test <- predict(svm_fit_drop, data_test_imputed[,-c(1,2)], decision
 ```
 
 ```{r}
-dv <- attr(svm_fit_drop_test, "decision.values")
+dv <- svm_fit_drop
 tp <- c() -> fp #initialize true and false positive vectors
 ks <- seq(min(dv), max(dv),length.out=nrow(dv))
 for (i in 1:nrow(dv)){
-k <- ks[i]
-tp[i] <- mean(dv[1:50] > k)
-fp[i] <- mean(dv[51:100] > k)
+
 }
 plot(fp,tp, t='l')
 abline(0,1)
